@@ -22,7 +22,13 @@
                 span.adsult
                     font.u-c-org ￥
                     font.u-s-org {{lowestPrice}}起
-                // span.children 分期￥230起
+                span.children 分期￥230起
+            .u-bottom-info
+                template(v-for="ele in trainList")
+                    span.f-seat(v-if="ele > 29") 二等座：有票
+                    span.f-seat(v-if="ele>10&ele<29") 一等座：{{ele}}
+                    span.f-seat(v-if="ele == 0") 特等座：0张
+            
 </template>
 
 <script>
@@ -31,8 +37,8 @@ export default {
     return {
       title: "火车列表",
       topbar: "0px",
-      trainList: [{}],
-      lowestPrice:439
+      trainList: [12,30,0],
+      lowestPrice: 339
     };
   }
 };
@@ -86,7 +92,7 @@ export default {
   li.u-info-box {
     background-color: #fff;
     height: 90px;
-    width:100%;
+    width: 100%;
     margin-bottom: 5px;
     position: relative;
     .u-left {
@@ -104,7 +110,7 @@ export default {
         color: @font-color-tt;
         position: absolute;
       }
-        
+
       span.f-time.time-start {
         top: 0;
         left: 0;
@@ -167,75 +173,94 @@ export default {
           border: 1px solid #ddd;
         }
       }
-    
-      span.f-train-time{
-          font-size: 10px;
-          color: #666;
-          width:80px;
-          text-align:center;
-          left: 75px;
-          position:absolute;
+
+      span.f-train-time {
+        font-size: 10px;
+        color: #666;
+        width: 80px;
+        text-align: center;
+        left: 75px;
+        position: absolute;
       }
 
       span.f-train-shift {
-          width: 80px;
-          font-size: 10px;
-          width:80px;
-          text-align: center;
-          left: 75px;
-          position:absolute;
-          top:20px;
-          font{
-              display:inline-block;
-          }
+        width: 80px;
+        font-size: 10px;
+        width: 80px;
+        text-align: center;
+        left: 75px;
+        position: absolute;
+        top: 20px;
+        font {
+          display: inline-block;
+        }
 
-          .identity-icon {
-              position:relative;
-              width:15px;
-              height:10px;
-              top:1px;
-              margin-left:3px;
-              background: url(./identification@3x.png);
-              background-repeat:no-repeat;
-              background-size: 15px 10px;
-          }
+        .identity-icon {
+          position: relative;
+          width: 15px;
+          height: 10px;
+          top: 1px;
+          margin-left: 3px;
+          background: url(./identification@3x.png);
+          background-repeat: no-repeat;
+          background-size: 15px 10px;
+        }
+      }
+    }
+
+    .u-price {
+      position: absolute;
+      float: left;
+      right: 0px;
+      top: 15px;
+
+      .adsult {
+        display: block;
+        overflow: hidden;
+        text-align: right;
+        float: right;
       }
 
-    .u-price{
-      position: absolute;;
-        float:right;
-        right:0px;
-        top:0px;
+      .u-c-org {
+        color: @font-color-org;
+        position: relative;
+        top: 1px;
+      }
 
-        .adsult{
-            display:block;
-            overflow: hidden;
-            text-align: right;
-            float:right;
-        }
+      .u-s-org {
+        font-size: 20px;
+        font-weight: 600;
+      }
 
-        .u-c-org {
-            color:@font-color-org;
-            position: relative;
-            top:1px;
-        }
-
-        .u-s-org{
-            font-size:20px;
-            font-weight: 600;
-        }
-
-        .children {
-            color: #999;
-            display:block;
-            overflow:hidden;
-            text-align: right;
-            position: relative;
-            right: 0px;
-            font-size:12px;
-        }
+      .children {
+        color: #999;
+        display: block;
+        overflow: hidden;
+        text-align: right;
+        position: absolute;
+        float: right;
+        top: 28px;
+        right: 0px;
+        font-size: 12px;
+      }
     }
-    
+
+    .u-bottom-info {
+        position: absolute;
+        bottom:5px;
+        left:15px;
+        font-size: 10px;
+        color: #666;
+        width:345px;
+        height:20px;
+
+        .f-seat {
+            white-space: nowrap;
+            float: left;
+            margin:0,0,50px,0;
+            line-height: 10px;
+            width: 33%;
+        }
     }
   }
 }
