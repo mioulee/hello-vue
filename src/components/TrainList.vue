@@ -1,12 +1,12 @@
 <template lang="pug">
-u-app-main
+.u-app-main
     .header
         a.back_icon
         .title {{title}}
     .u-info 
         li.u-info-box
             .u-left
-                span.f-time 12:30
+                span.f-time.time-start 12:30
                 span.f-time.time-end 14:15
                     font.u-add +1天
                 span.f-place.place-start 北京
@@ -22,10 +22,7 @@ u-app-main
                 span.adsult
                     font.u-c-org ￥
                     font.u-s-org {{lowestPrice}}起
-                span.children 分期￥230起
-
-
-
+                // span.children 分期￥230起
 </template>
 
 <script>
@@ -94,9 +91,9 @@ export default {
     position: relative;
     .u-left {
       position: absolute;
-      left: 0px;
+      left: 15px;
       top: 15px;
-      width: 260px;
+      width: 230px;
       span {
         display: inline-block;
         white-space: nowrap;
@@ -106,8 +103,11 @@ export default {
         font-size: 20px;
         color: @font-color-tt;
         position: absolute;
+      }
+        
+      span.f-time.time-start {
         top: 0;
-        left: 0px;
+        left: 0;
       }
 
       span.f-time.time-end {
@@ -130,6 +130,10 @@ export default {
         top: 25px;
       }
 
+      span.f-place.place-start {
+        left: 0;
+      }
+
       span.f-place.place-end {
         right: 0;
       }
@@ -140,7 +144,7 @@ export default {
         background-color: #ddd;
         position: absolute;
         left: 75px;
-        top: 15px;
+        top: 18px;
 
         em.ico-circle-solid {
           width: 5px;
@@ -198,15 +202,16 @@ export default {
       }
 
     .u-price{
-        position:absolute;
+      position: absolute;;
         float:right;
-        right:15px;
-        top:15px;
+        right:0px;
+        top:0px;
 
         .adsult{
             display:block;
             overflow: hidden;
             text-align: right;
+            float:right;
         }
 
         .u-c-org {
