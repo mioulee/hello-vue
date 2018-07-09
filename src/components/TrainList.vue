@@ -37,9 +37,33 @@ export default {
     return {
       title: "火车列表",
       topbar: "0px",
-      trainList: [12,30,0],
-      lowestPrice: 339
+      trainList: [],
+      lowestPrice: 339,
+      searchUrlParams: {
+        departCity: "SHA",
+        arriveCity: "SIA",
+        fromStation: "NJH",
+        toStation: "SHH",
+        trainDate: "2018-08-29",
+        requestType: "0"
+      },
+      url: "http://10.32.16.107:10901/tps/app/btc/train/trainList"
     };
+  },
+  methods: {
+    httpGetTrainList() {
+      let self = this;
+      self.$http.post(self.url, self.searchUrlParams).then(function(resp) {
+        if (resp.data.success == false) {
+          alert(resp.data.msg);
+          return;
+        }
+        trainList = resp.data.data.trainInfoList;
+      });
+    }
+  },
+  mounted() {
+    this.httpGetTrainList();
   }
 };
 </script>
@@ -246,21 +270,21 @@ export default {
     }
 
     .u-bottom-info {
-        position: absolute;
-        bottom:5px;
-        left:15px;
-        font-size: 10px;
-        color: #666;
-        width:345px;
-        height:20px;
+      position: absolute;
+      bottom: 5px;
+      left: 15px;
+      font-size: 10px;
+      color: #666;
+      width: 345px;
+      height: 20px;
 
-        .f-seat {
-            white-space: nowrap;
-            float: left;
-            margin:0,0,50px,0;
-            line-height: 10px;
-            width: 33%;
-        }
+      .f-seat {
+        white-space: nowrap;
+        float: left;
+        margin: 0, 0, 50px, 0;
+        line-height: 10px;
+        width: 33%;
+      }
     }
   }
 }
