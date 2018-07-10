@@ -71,7 +71,6 @@ axios.interceptors.request.use(async(config) => {
     config.headers['Content-Type'] = 'application/x-www-form-urlencoded';
     // config.headers['BTC-TPS-REQ-MOCK'] = 'mock';
     if (0) {
-        alert('app')
         config.data = {
             "baseParams": {
                 "platformId": window.iosOrAndriod(), //平台
@@ -117,7 +116,6 @@ axios.interceptors.request.use(async(config) => {
             // "mockFlag": '1',
         }
     } else {
-        alert('else')
         config.data = {
             "baseParams": {
                 "platformId": "ios", //平台
@@ -154,6 +152,5 @@ axios.interceptors.request.use(async(config) => {
     return config;
 }, function(error) {
     // 对请求失败做处理
-    alert('调方法了')
     return Promise.reject(error);
 });

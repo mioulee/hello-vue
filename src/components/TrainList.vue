@@ -6,29 +6,30 @@
     .u-info(v-for='item in trainList')
         li.u-info-box
             .u-left
-                span.f-time.time-start 12:30
-                span.f-time.time-end 14:15
-                    font.u-add +1天
-                span.f-place.place-start 北京
-                span.f-place.place-end 上海
+                span.f-time.time-start {{item.startTime}}
+                span.f-time.time-end {{item.arriveTime}}
+                    font.u-add(v-if='item.arriveDays > 0') +{{item.arriveDays}}天
+                span.f-place.place-start {{item.fromStationName}}
+                span.f-place.place-end {{item.toStationName}}
                 span.ico-line
                     em.ico-circle-solid
                     em.ico-circle-hollow
-                span.f-train-time 3时12分
+                span.f-train-time {{item.runTimeName}}
                 span.f-train-shift
-                    font G430
-                    font.identity-icon
+                    font {{item.trainCode}}
+                    font.identity-icon(v-if="item.accessByIdcard==='Y'")
             .u-price
                 span.adsult
                     font.u-c-org ￥
-                    font.u-s-org {{lowestPrice}}起
+                    font.u-s-org {{item.lowestPrice}}起
                 span.children 分期￥230起
             .u-bottom-info
                 template(v-for="ele in trainList")
                     span.f-seat(v-if="ele > 29") 二等座：有票
                     span.f-seat(v-if="ele>10&ele<29") 一等座：{{ele}}
                     span.f-seat(v-if="ele == 0") 特等座：0张
-            
+
+    .footer(:class='footer-show')  
 </template>
 
 <script>
@@ -59,6 +60,13 @@ export default {
           return;
         }
         self.trainList = resp.data.data.trainInfoList;
+        self.trainList.forEach(item => {
+          item["runTimeName"] =
+            Math.floor(item.runTimeMinute / 60) +
+            "时" +
+            Math.floor(item.runTimeMinute % 60) +
+            "分";
+        });
       });
     }
   },
@@ -288,6 +296,23 @@ export default {
       }
     }
   }
+}
+
+.u-app-main .footer {
+  bottom: 0px;
+  position: fixed;
+  display: flex;
+  width: 100%;
+  height: 100px;
+  background-color: #fce105;
+  border-top: 1px solid #eee;
+  z-index: 1000;
+  transition: all 0.5s;
+}
+
+.u-app-main .footer-show {
+    height: 50px;
+    transition: all 0.5s;
 }
 </style>
 
