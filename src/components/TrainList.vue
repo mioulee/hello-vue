@@ -3,7 +3,7 @@
     .header
         a.back_icon
         .title {{title}}
-    .u-info 
+    .u-info(v-for='item in trainList')
         li.u-info-box
             .u-left
                 span.f-time.time-start 12:30
@@ -44,7 +44,7 @@ export default {
         arriveCity: "SIA",
         fromStation: "NJH",
         toStation: "SHH",
-        trainDate: "2018-08-29",
+        trainDate: "2018-07-29",
         requestType: "0"
       },
       url: "http://10.32.16.107:10901/tps/app/btc/train/trainList"
@@ -58,7 +58,7 @@ export default {
           alert(resp.data.msg);
           return;
         }
-        trainList = resp.data.data.trainInfoList;
+        self.trainList = resp.data.data.trainInfoList;
       });
     }
   },
@@ -82,6 +82,7 @@ export default {
   position: fixed;
   text-align: center;
   top: 0;
+  z-index: 10001;
   background-image: linear-gradient(90deg, #fce105 0%, #fecd15 100%);
 
   .back_icon {
