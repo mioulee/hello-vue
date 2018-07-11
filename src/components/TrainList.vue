@@ -29,11 +29,19 @@
                     span.f-seat(v-if="ele>10&ele<29") 一等座：{{ele}}
                     span.f-seat(v-if="ele == 0") 特等座：0张
 
-    .footer(:class='footer-show') 
+    .footer() 
         .u-tab.u-time
+            .ico-bot.ico-sort
+            |时间
         .u-tab.u-price
+            .ico-bot.ico-sort
+            |价格
         .u-tab.u-consuming
-        .u-tab  
+            .ico-bot.ico-sort
+            |购买
+        .u-tab.u-filter
+            .ico-bot.ico-sort
+            |筛选
 </template>
 
 <script>
@@ -312,9 +320,8 @@ export default {
   position: fixed;
   display: flex;
   width: 100%;
-  height: 100px;
   left: 0px;
-  background-color: #fce105;
+  background-color: #fff;
   border-top: 1px solid #eee;
   z-index: 1000;
   transition: all 0.5s;
@@ -322,7 +329,40 @@ export default {
   .u-tab{
     flex:1;
     font-size: 10px;
-    text-align: center
+    text-align: center;
+  }
+
+  .ico-bot{
+      width: 20px;
+      height: 20px;
+      background-size: 100%;
+      display: block;
+      background-repeat: no-repeat;
+      margin: 7px auto 2px;
+  }
+
+  .u-tab.u-consuming {
+    .ico-sort {
+        background-image:~"url(./ticket_query_consuming@3x.png)";
+    }
+  }
+
+  .u-tab.u-time {
+      .ico-sort{
+          background-image: ~"url(./ticket_tab_shijianpaixu@3x.png)"
+      }
+  }
+
+  .u-tab.u-price {
+      .ico-sort{
+          background-image: ~"url(./ticket_tab_jiagepaixu@3x.png)"
+      }
+  }
+
+  .u-tab.u-filter {
+      .ico-sort{
+          background-image: ~"url(./ticket_tab_shuaixuan_nochoose@3x.png)"
+      }
   }
 }
 
