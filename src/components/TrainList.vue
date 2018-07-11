@@ -29,7 +29,11 @@
                     span.f-seat(v-if="ele>10&ele<29") 一等座：{{ele}}
                     span.f-seat(v-if="ele == 0") 特等座：0张
 
-    .footer(:class='footer-show')  
+    .footer(:class='footer-show') 
+        .u-tab.u-time
+        .u-tab.u-price
+        .u-tab.u-consuming
+        .u-tab  
 </template>
 
 <script>
@@ -81,8 +85,13 @@ export default {
 @font-color-tt: #051b28;
 @font-color-main: #666;
 @font-color-org: #eb5640;
+  body,
+    html {
+        height: auto !important;
+    }
 .u-app-main {
   height: 100%;
+  width: 100%;
 }
 .header {
   width: 100%;
@@ -304,10 +313,17 @@ export default {
   display: flex;
   width: 100%;
   height: 100px;
+  left: 0px;
   background-color: #fce105;
   border-top: 1px solid #eee;
   z-index: 1000;
   transition: all 0.5s;
+
+  .u-tab{
+    flex:1;
+    font-size: 10px;
+    text-align: center
+  }
 }
 
 .u-app-main .footer-show {
