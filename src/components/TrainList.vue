@@ -3,7 +3,7 @@
     .header
         a.back_icon
         .title {{title}}
-    .u-info(v-for='item in trainList')
+    .u-info(v-for='item in trainList1')
         li.u-info-box
             .u-left
                 span.f-time.time-start {{item.startTime}}
@@ -29,19 +29,44 @@
                     span.f-seat(v-if="ele>10&ele<29") 一等座：{{ele}}
                     span.f-seat(v-if="ele == 0") 特等座：0张
 
-    .footer() 
-        .u-tab.u-time
+    .footer 
+        .u-tab.u-time(
+            @click="sortTime()"
+            :class="{'sortTop':sortTimeType,'sortBottom':!sortTimeType,'isCheck':sortTimeSwitch}"
+            )
             .ico-bot.ico-sort
-            |时间
-        .u-tab.u-price
+            |{{sortTimeTxt}}
+        .u-tab.u-price(
+            @click="sortPrice()"
+            :class="{'sortTop':sortPriceType,'sortBottom':!sortPriceType,'isCheck':sortPriceSwitch}"
+            )
             .ico-bot.ico-sort
-            |价格
-        .u-tab.u-consuming
+            |{{sortPriceTxt}}
+        .u-tab.u-consuming(
+            @click="sortDuration()"
+            :class="{'sortTop':sortDurationType,'sortBottom':!sortDurationType,'isCheck':sortDurationSwitch}"
+            )
             .ico-bot.ico-sort
-            |购买
-        .u-tab.u-filter
-            .ico-bot.ico-sort
+            |{{sortDurationTxt}}
+        .u-tab(
+            @click="filterToggleOn()"
+            :class="{'isCheck':filterSwitch}"
+            )
+            .ico-bot.ico-screen
             |筛选
+    .mt-popup.u-pop-screen(
+        v-model="filterSwitch"
+        position="top"
+        popup-transition="popup-fade"
+    )
+        .u-info-result 共
+            span.u-c-yellow 3
+            |个结果
+            span.btn-cancel 取消
+            span.btn-confirm 确定
+        .u-screen-box()
+            span.u-train-t1 仅显示有票列车
+                mt-switch()
 </template>
 
 <script>
@@ -51,6 +76,7 @@ export default {
       title: "火车列表",
       topbar: "0px",
       trainList: [],
+      screenData: [],
       lowestPrice: 339,
       searchUrlParams: {
         departCity: "SHA",
@@ -60,6 +86,16 @@ export default {
         trainDate: "2018-07-29",
         requestType: "0"
       },
+      sortTimeSwitch: false,
+      sortTimeType: false, //true,表示时间从早到晚，false，反之
+      sortTimeTxt: "时间",
+      sortPriceSwitch: false,
+      sortPriceType: false, //true,表示价格从低到高，false，反之
+      sortPriceTxt: "价格",
+      sortDurationSwitch: false,
+      sortDurationType: false, //true,表示耗时从低到高，false，反之
+      sortDurationTxt: "耗时",
+      filterSwitch: false,
       url: "http://10.32.16.107:10901/tps/app/btc/train/trainList"
     };
   },
@@ -80,6 +116,144 @@ export default {
             "分";
         });
       });
+    },
+
+    sortTime() {
+      if (!this.sortTimeSwitch) {
+        this.sortTimeSwitch = true;
+        this.sortPriceSwitch = false;
+        this.sortDurationSwitch = false;
+        this.filterSwitch = false;
+
+        this.sortPriceTxt = "价格";
+        this.sortDurationTxt = "耗时";
+      }
+      this.sortTimeType = !this.sortTimeType;
+      this.getSortTimeTxt();
+
+      this.sortData();
+    },
+
+    getSortTimeTxt() {
+      if (this.sortTimeSwitch) {
+        if (this.sortTimeType) {
+          this.sortTimeTxt = "时间从早到晚";
+        } else {
+          this.sortTimeTxt = "时间从晚到早";
+        }
+      } else {
+        this.sortTimeTxt = "时间";
+      }
+    },
+    sortPrice() {
+      if (!this.sortPriceSwitch) {
+        this.sortTimeSwitch = false;
+        this.sortPriceSwitch = true;
+        this.sortDurationSwitch = false;
+        this.filterSwitch = false;
+
+        this.sortTimeTxt = "时间";
+        this.sortDurationTxt = "耗时";
+      }
+      this.sortPriceType = !this.sortPriceType;
+      this.getSortPriceTxt();
+
+      this.sortData();
+    },
+
+    getSortPriceTxt() {
+      if (this.sortPriceSwitch) {
+        if (this.sortPriceType) {
+          this.sortPriceTxt = "价格从低到高";
+        } else {
+          this.sortPriceTxt = "价格从高到低";
+        }
+      } else {
+        this.sortPriceTxt = "价格";
+      }
+    },
+
+    sortDuration() {
+      if (!this.sortDurationSwitch) {
+        this.sortTimeSwitch = false;
+        this.sortPriceSwitch = false;
+        this.sortDurationSwitch = true;
+        this.filterSwitch = false;
+
+        this.sortTimeTxt = "时间";
+        this.sortPriceTxt = "价格";
+      }
+      this.sortDurationType = !this.sortDurationType;
+      this.getSortDurationTxt();
+
+      this.sortData();
+    },
+
+    sortData() {
+      if (this.sortTimeSwitch) this.sortDataByTime();
+      if (this.sortPriceSwitch) this.sortDataByPrice();
+      if (this.sortDurationSwitch) this.sortDataByDuration();
+    },
+
+    //时间排序比较器
+    timeComparator(x, y) {
+      if (x.startTime > y.startTime) return 1;
+      else if (x.startTime < y.startTime) return -1;
+      else return 0;
+    },
+    //按时间排序
+    sortDataByTime() {
+      this.screenData = this.trainList;
+      this.screenData.sort(this.timeComparator);
+    },
+
+    //按价格排序
+    sortDataByPrice() {
+      let that = this;
+      this.screenData = this.trainList;
+      var comparator = function(x, y) {
+        if (x.lowestPrice - y.lowestPrice > 0) return 1;
+        else if (x.lowestPrice - y.lowestPrice < 0) return -1;
+        else return that.timeComparator(x, y);
+      };
+      this.screenData.sort(comparator);
+    },
+
+    //按耗时排序
+    sortDataByDuration() {
+      let that = this;
+      this.screenData = this.trainList;
+      var comparator = function(x, y) {
+        if (x.runTimeMinute - y.runTimeMinute > 0) return 1;
+        else if (x.runTimeMinute - y.runTimeMinute < 0) return -1;
+        else return that.timeComparator(x, y);
+      };
+      this.screenData.sort(comparator);
+    },
+
+    getSortDurationTxt() {
+      if (this.sortDurationSwitch) {
+        if (this.sortDurationType) {
+          this.sortDurationTxt = "耗时从低到高";
+        } else {
+          this.sortDurationTxt = "耗时从高到低";
+        }
+      } else {
+        this.sortDurationTxt = "耗时";
+      }
+    },
+
+    filterToggleOn() {
+      if (!this.filterSwitch) {
+        this.sortTimeSwitch = false;
+        this.sortPriceSwitch = false;
+        this.sortDurationSwitch = false;
+        this.filterSwitch = true;
+
+        this.sortTimeTxt = "时间";
+        this.sortPriceTxt = "价格";
+        this.sortDurationTxt = "耗时";
+      }
     }
   },
   mounted() {
@@ -93,10 +267,11 @@ export default {
 @font-color-tt: #051b28;
 @font-color-main: #666;
 @font-color-org: #eb5640;
-  body,
-    html {
-        height: auto !important;
-    }
+body,
+html {
+  height: auto !important;
+  margin: 0;
+}
 .u-app-main {
   height: 100%;
   width: 100%;
@@ -326,49 +501,123 @@ export default {
   z-index: 1000;
   transition: all 0.5s;
 
-  .u-tab{
-    flex:1;
+  .u-tab {
+    flex: 1;
     font-size: 10px;
     text-align: center;
   }
 
-  .ico-bot{
-      width: 20px;
-      height: 20px;
-      background-size: 100%;
-      display: block;
-      background-repeat: no-repeat;
-      margin: 7px auto 2px;
+  .ico-bot {
+    width: 20px;
+    height: 20px;
+    background-size: 100%;
+    display: block;
+    background-repeat: no-repeat;
+    margin: 7px auto 2px;
   }
 
   .u-tab.u-consuming {
     .ico-sort {
-        background-image:~"url(./ticket_query_consuming@3x.png)";
+      background-image: ~"url(./ticket_query_consuming@3x.png)";
     }
   }
 
   .u-tab.u-time {
-      .ico-sort{
-          background-image: ~"url(./ticket_tab_shijianpaixu@3x.png)"
-      }
+    .ico-sort {
+      background-image: ~"url(./ticket_tab_shijianpaixu@3x.png)";
+    }
   }
 
   .u-tab.u-price {
-      .ico-sort{
-          background-image: ~"url(./ticket_tab_jiagepaixu@3x.png)"
-      }
+    .ico-sort {
+      background-image: ~"url(./ticket_tab_jiagepaixu@3x.png)";
+    }
   }
 
-  .u-tab.u-filter {
-      .ico-sort{
-          background-image: ~"url(./ticket_tab_shuaixuan_nochoose@3x.png)"
-      }
+  // .u-tab.u-filter {
+  //   .ico-screen {
+  //     background-image: ~"url(./ticket_tab_shuaixuan_nochoose@3x.png)";
+  //   }
+  // }
+
+  .ico-screen {
+    background-image: ~"url(./ticket_tab_shuaixuan_nochoose@3x.png)";
+  }
+
+  .sortTop.isCheck {
+    .ico-sort {
+      background-image: ~"url(./ticket_tab_didaogao@3x.png)";
+    }
+  }
+
+  .sortBottom.isCheck {
+    .ico-sort {
+      background-image: ~"url(./ticket_tab_gaodaodi@3x.png)";
+    }
+  }
+
+  .isCheck {
+    .ico-screen {
+      background-image: ~"url(./ticket_tab_shuaixuan_choose@3x.png)";
+    }
   }
 }
 
 .u-app-main .footer-show {
-    height: 50px;
-    transition: all 0.5s;
+  height: 50px;
+  transition: all 0.5s;
+}
+
+.u-pop-screen {
+  .u-info-result {
+    display: block;
+    height: 35px;
+    font-size: 14px;
+    text-align: center;
+    line-height: 35px;
+    background-color: #f5f5f5;
+    color: #999;
+    position: absolute;
+    left: 0px;
+    width: 100%;
+    z-index: 1010;
+  }
+
+  .u-c-yellow {
+    color: #101010;
+    font-size: 15px;
+    margin: 0 3px;
+  }
+
+  .btn-cancel {
+    position: relative;
+    float: left;
+    left: 15px;
+    color: #101010;
+  }
+
+  .btn-confirm {
+    position: relative;
+    float: right;
+    right: 15px;
+    color: #101010;
+  }
+}
+
+.u-screen-box{
+  background-color: #fff;
+  border-top: 1px solid #eee;
+  position: relative;
+  padding-left: 26px;
+  overflow: auto;
+
+  .u-train-t1{
+    position:relative;
+    font-size: 14px;
+    display: block;
+    margin-bottom:15px;
+    margin-top: 30px;
+  }
 }
 </style>
 

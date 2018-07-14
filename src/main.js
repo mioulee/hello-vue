@@ -4,8 +4,12 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import axios from 'axios'
+import Mint from 'mint-ui';
+import 'mint-ui/lib/style.css'; 
 
 Vue.config.productionTip = false
+Vue.use(Mint);
+
 
 Vue.prototype.$http = axios
 
