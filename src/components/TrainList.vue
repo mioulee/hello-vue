@@ -28,6 +28,28 @@
                     span.f-seat(v-if="ele > 29") 二等座：有票
                     span.f-seat(v-if="ele>10&ele<29") 一等座：{{ele}}
                     span.f-seat(v-if="ele == 0") 特等座：0张
+    mt-popup.u-pop-screen(
+        v-model="filterSwitch"
+        position="bottom"
+        popup-transition="popup-fade"
+    )
+
+        .u-info-result 共
+            span.u-c-yellow 3
+            |个结果
+            span.btn-cancel 取消
+            span.btn-confirm 确定
+        .u-screen-box(:style="{'max-height':'460px'}")
+            span.u-train-t1 仅显示有票列车
+                mt-switch
+                .u-main-box(:style="{'padding-bottom':bottomBar}")
+                tempate(v-for="item in filterConditions")
+                    span.u-train-tt 
+                        font.f-tt {{item.name}}
+                    li.u-train-m()
+                        span.u-chk-box(@click="changeCheckList(element)" v-for="element in item.conditions")
+                            em.ico-gou(:class="{'checked':element.checked}")
+                            font.chk-f1 {{element.label}}
 
     .footer 
         .u-tab.u-time(
@@ -54,19 +76,7 @@
             )
             .ico-bot.ico-screen
             |筛选
-    .mt-popup.u-pop-screen(
-        v-model="filterSwitch"
-        position="top"
-        popup-transition="popup-fade"
-    )
-        .u-info-result 共
-            span.u-c-yellow 3
-            |个结果
-            span.btn-cancel 取消
-            span.btn-confirm 确定
-        .u-screen-box()
-            span.u-train-t1 仅显示有票列车
-                mt-switch()
+    
 </template>
 
 <script>
@@ -76,7 +86,7 @@ export default {
       title: "火车列表",
       topbar: "0px",
       trainList: [],
-      screenData: [],
+      screenData: [1,2,3,4,5,6],
       lowestPrice: 339,
       searchUrlParams: {
         departCity: "SHA",
@@ -96,7 +106,113 @@ export default {
       sortDurationType: false, //true,表示耗时从低到高，false，反之
       sortDurationTxt: "耗时",
       filterSwitch: false,
-      url: "http://10.32.16.107:10901/tps/app/btc/train/trainList"
+      url: "http://10.32.16.107:10901/tps/app/btc/train/trainList",
+
+      filterConditions:[
+        {
+          name:"车次类型",
+          conditions:[
+            {
+              label:"不限",
+              checked:true
+            },{
+              label:"高铁(G/C)",
+              checked:false
+            },{
+              label:"动车(D)",
+              checked:false
+            },{
+              label:"普通(Z/T/K)",
+              checked:false
+            },{
+              label:"其他(L/Y等)",
+              checked:false
+            }
+          ]
+        },
+
+        {
+          name:"出发车站",
+          conditions:[
+            {
+              label:"不限",
+              checked:true
+            }
+          ]
+        },
+
+        {
+          name:"到达车站",
+          conditions:[
+            {
+              label:"不限",
+              checked:true
+            }
+          ]
+        },
+
+        {
+          name:"出发时刻",
+          conditions:[
+            {
+              label:"不限",
+              checked:true
+            },
+            {
+              label:"00:00~06:00",
+              checked:false
+            },
+            {
+              label:"06:00~12:00",
+              checked:false
+            },
+            {
+              label:"12:00~18:00",
+              checked:false
+            },
+            {
+              label:"18:00~24:00",
+              checked:false
+            }
+          ]
+        },
+
+        {
+          name:"到达时刻",
+          conditions:[
+            {
+              label:"不限",
+              checked:true
+            },
+            {
+              label:"00:00~06:00",
+              checked:false
+            },
+            {
+              label:"06:00~12:00",
+              checked:false
+            },
+            {
+              label:"12:00~18:00",
+              checked:false
+            },
+            {
+              label:"18:00~24:00",
+              checked:false
+            }
+          ]
+        },
+
+        {
+          name:"坐席类型",
+          conditions:[
+            {
+              label:"不限",
+              checked:true
+            }
+          ]
+        }
+      ]
     };
   },
   methods: {
@@ -569,6 +685,7 @@ html {
 }
 
 .u-pop-screen {
+  width: 100%;
   .u-info-result {
     display: block;
     height: 35px;
@@ -610,6 +727,63 @@ html {
   position: relative;
   padding-left: 26px;
   overflow: auto;
+  text-align: left;
+
+  .u-f-tt {
+    color: #222;
+    font-weight: 300;
+    font-size: 14px;
+  }
+  .u-train-m {
+    display: block;
+    text-align: left;
+    font-weight: 300;
+    .u-chk-box {
+      width: 50%;
+      display: inline-block;
+      margin-bottom: 12px;
+      .ico-gou {
+        width: 13px;
+        height: 13px;
+        border: 1px solid #fecd15;
+        border-radius: 3px;
+        display: inline-block;
+        margin-right: 10px;
+        position: relative;
+        top: 2px;
+      }
+      .checked {
+        background-image: url("./checkbox@3x.png");
+        background-size: 100%;
+      }
+    }
+  }
+  .u-train-tt {
+    line-height: 35px;
+    color: #222222;
+    font-size: 14px;
+    display: block;
+    overflow: hidden;
+    position: relative;
+
+    .f-tt {
+      display: inline-block;
+      position: relative;
+      padding-right: 10px;
+      z-index: 2;
+      background-color: #fff;
+    }
+  }
+  .u-train-tt:before {
+    content: "";
+    display: block;
+    height: 1px;
+    background-color: #eee;
+    overflow: hidden;
+    position: absolute;
+    width: 100%;
+    top: 18px;
+  }
 
   .u-train-t1{
     position:relative;
@@ -617,7 +791,36 @@ html {
     display: block;
     margin-bottom:15px;
     margin-top: 30px;
+
+    .mint-switch {
+      display: inline-block;
+      position: absolute;
+      left: 180px;
+      .mint-switch-core {
+        width: 40px;
+        height: 20px;
+      }
+      .mint-switch-core::before {
+        width:34px;
+        height: 8px;
+        background-color: transparent;
+      }
+      .mint-switch-core::after {
+        width: 15px;
+        height: 15px;
+        top: 1px;
+        margin-left: 1px;
+      }
+      .mint-switch-input:checked + .mint-switch-core {
+        border-color: #f7cd4a;
+        background-color: #f7cd4a;
+      }
+    }
   }
+}
+
+.mint-indicator-mask {
+  top: 105px !important;
 }
 </style>
 
