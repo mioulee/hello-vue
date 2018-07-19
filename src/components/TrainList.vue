@@ -43,7 +43,7 @@
             span.u-train-t1 仅显示有票列车
                 mt-switch
                 .u-main-box(:style="{'padding-bottom':bottomBar}")
-                tempate(v-for="item in filterConditions")
+                template(v-for="item in AllConditions")
                     span.u-train-tt 
                         font.f-tt {{item.name}}
                     li.u-train-m()
@@ -108,7 +108,7 @@ export default {
       filterSwitch: false,
       url: "http://10.32.16.107:10901/tps/app/btc/train/trainList",
 
-      filterConditions:[
+      AllConditions:[
         {
           name:"车次类型",
           conditions:[
@@ -127,26 +127,6 @@ export default {
             },{
               label:"其他(L/Y等)",
               checked:false
-            }
-          ]
-        },
-
-        {
-          name:"出发车站",
-          conditions:[
-            {
-              label:"不限",
-              checked:true
-            }
-          ]
-        },
-
-        {
-          name:"到达车站",
-          conditions:[
-            {
-              label:"不限",
-              checked:true
             }
           ]
         },
@@ -204,6 +184,26 @@ export default {
         },
 
         {
+          name:"出发车站",
+          conditions:[
+            {
+              label:"不限",
+              checked:true
+            }
+          ]
+        },
+
+        {
+          name:"到达车站",
+          conditions:[
+            {
+              label:"不限",
+              checked:true
+            }
+          ]
+        },
+
+        {
           name:"坐席类型",
           conditions:[
             {
@@ -231,9 +231,40 @@ export default {
             Math.floor(item.runTimeMinute % 60) +
             "分";
         });
+        //预处理筛选框显示数据
+        self.prepareCondition();
       });
     },
 
+    //预处理筛选框显示数据
+    prepareCondition() {
+      let self = this
+      var fromStation = new Set()
+      var toStation = new Set()
+      var seat = new Set()
+      self.trainList.forEach(item => {
+        fromStation.add(item.fromStation)
+        toStation.add(item.toStationName)
+        item.seatsInfo.forEach(item => {
+            seat.add(item.seatTypeName)
+        })
+      });
+      fromStation.forEach(item=>{
+        var condition = {
+          'label':item,
+          'checked':false}
+          alert(typeof(self.AllConditions[3].conditions))
+        self.AllConditions[3].conditions.put(condition)
+      })
+      toStation.forEach(item=>{
+        self.AllConditions[4].conditions.put({
+          'label':item,
+          'checked':false})
+      })
+      seat.forEach(item=>{
+        self.AllConditions[5].conditions.put({'label':item,'checked':false})
+      })
+    },
     sortTime() {
       if (!this.sortTimeSwitch) {
         this.sortTimeSwitch = true;
@@ -245,8 +276,8 @@ export default {
         this.sortDurationTxt = "耗时";
       }
       this.sortTimeType = !this.sortTimeType;
-      this.getSortTimeTxt();
 
+      this.getSortTimeTxt();
       this.sortData();
     },
 
