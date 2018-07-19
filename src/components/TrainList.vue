@@ -37,8 +37,8 @@
         .u-info-result 共
             span.u-c-yellow 3
             |个结果
-            span.btn-cancel 取消
-            span.btn-confirm 确定
+            span.btn-cancel(@click="filterSwitch = !filterSwitch") 取消
+            span.btn-confirm(@click="clickConfirmBtn()") 确定
         .u-screen-box(:style="{'max-height':'460px'}")
             span.u-train-t1 仅显示有票列车
                 mt-switch
@@ -47,7 +47,7 @@
                     span.u-train-tt 
                         font.f-tt {{item.name}}
                     li.u-train-m()
-                        span.u-chk-box(@click="changeCheckList(element)" v-for="element in item.conditions")
+                        span.u-chk-box(@click="changeCheckList(item.conditions,element)" v-for="element in item.conditions")
                             em.ico-gou(:class="{'checked':element.checked}")
                             font.chk-f1 {{element.label}}
 
@@ -111,6 +111,7 @@ export default {
       AllConditions:[
         {
           name:"车次类型",
+          type:"train_num",
           conditions:[
             {
               label:"不限",
@@ -243,7 +244,7 @@ export default {
       var toStation = new Set()
       var seat = new Set()
       self.trainList.forEach(item => {
-        fromStation.add(item.fromStation)
+        fromStation.add(item.fromStationName)
         toStation.add(item.toStationName)
         item.seatsInfo.forEach(item => {
             seat.add(item.seatTypeName)
@@ -253,16 +254,15 @@ export default {
         var condition = {
           'label':item,
           'checked':false}
-          alert(typeof(self.AllConditions[3].conditions))
-        self.AllConditions[3].conditions.put(condition)
+        self.AllConditions[3].conditions.push(condition)
       })
       toStation.forEach(item=>{
-        self.AllConditions[4].conditions.put({
+        self.AllConditions[4].conditions.push({
           'label':item,
           'checked':false})
       })
       seat.forEach(item=>{
-        self.AllConditions[5].conditions.put({'label':item,'checked':false})
+        self.AllConditions[5].conditions.push({'label':item,'checked':false})
       })
     },
     sortTime() {
@@ -401,6 +401,34 @@ export default {
         this.sortPriceTxt = "价格";
         this.sortDurationTxt = "耗时";
       }
+    },
+
+    changeCheckList(conditions,element) {
+        if(element.label === "不限") {
+            if(element.checked) {
+                return
+            }else {
+                element.checked = true
+                conditions.forEach((item,index) => {
+                    if(index != 0) {
+                        item.checked = false
+                    }
+                })
+            }
+        }
+        element.checked = !element.checked
+
+        var flag = false;
+        conditions.forEach(item => {
+            if(item.checked) {
+                flag = true
+            }
+        })
+        if(!flag) {
+            conditions[0].checked = true
+        }else {
+            conditions[0].checked = false
+        }
     }
   },
   mounted() {
