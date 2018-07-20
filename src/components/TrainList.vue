@@ -108,6 +108,13 @@ export default {
       filterSwitch: false,
       url: "http://10.32.16.107:10901/tps/app/btc/train/trainList",
 
+      departTimeFilterConditions:[],
+      trainTypeFilterConditions:[],
+      arriveTimeFilterConditions:[],
+      departCityConditions:[],
+      arriveCityConditions:[],
+      seatTypeCondition:[],
+
       AllConditions:[
         {
           name:"车次类型",
@@ -429,6 +436,25 @@ export default {
         }else {
             conditions[0].checked = false
         }
+
+        //将选中条件置于对应的集合中
+        conditions.forEach((item,index)=>{
+          if(conditions.name == "车次类型") {
+              this.trainTypeFilterConditions.splice(0,this.trainTypeFilterConditions.length)
+              if(index != 0&item.checked == true) {
+                this.trainTypeFilterConditions.push(item.label)
+              }
+          }
+        })
+
+       this.doFilterData();
+    },
+
+    //根据选中的筛选条件去筛选screenData中数据
+    doFilterData() {
+        this.trainTypeFilterConditions.forEach(item => {
+          console.log(item)
+        })
     }
   },
   mounted() {
