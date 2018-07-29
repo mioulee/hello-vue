@@ -3,7 +3,7 @@
     .header
         a.back_icon
         .title {{title}}
-    .u-info(v-for='item in trainList1')
+    .u-info(v-for='item in screenData')
         li.u-info-box
             .u-left
                 span.f-time.time-start {{item.startTime}}
@@ -35,7 +35,7 @@
     )
 
         .u-info-result 共
-            span.u-c-yellow 3
+            span.u-c-yellow {{filterData.length}}
             |个结果
             span.btn-cancel(@click="filterSwitch = !filterSwitch") 取消
             span.btn-confirm(@click="clickConfirmBtn()") 确定
@@ -47,7 +47,7 @@
                     span.u-train-tt 
                         font.f-tt {{item.name}}
                     li.u-train-m()
-                        span.u-chk-box(@click="changeCheckList(item.conditions,element)" v-for="element in item.conditions")
+                        span.u-chk-box(@click="changeCheckList(item.name,item.conditions,element)" v-for="element in item.conditions")
                             em.ico-gou(:class="{'checked':element.checked}")
                             font.chk-f1 {{element.label}}
 
@@ -85,8 +85,9 @@ export default {
     return {
       title: "火车列表",
       topbar: "0px",
-      trainList: [],
-      screenData: [1,2,3,4,5,6],
+      trainList: [],//请求的列表源数据
+      screenData: [],//要显示到屏幕的列表数据
+      filterData:[],//筛选之后的暂时保存的数据，如果点击确定就将其赋值给screenData
       lowestPrice: 339,
       searchUrlParams: {
         departCity: "SHA",
@@ -96,6 +97,7 @@ export default {
         trainDate: "2018-07-29",
         requestType: "0"
       },
+      resultNum:0,//筛选的结果数
       sortTimeSwitch: false,
       sortTimeType: false, //true,表示时间从早到晚，false，反之
       sortTimeTxt: "时间",
@@ -108,108 +110,119 @@ export default {
       filterSwitch: false,
       url: "http://10.32.16.107:10901/tps/app/btc/train/trainList",
 
-      AllConditions:[
+      departTimeFilterConditions: [],
+      trainTypeFilterConditions: [],
+      arriveTimeFilterConditions: [],
+      departCityConditions: [],
+      arriveCityConditions: [],
+      seatTypeCondition: [],
+
+      AllConditions: [
         {
-          name:"车次类型",
-          type:"train_num",
-          conditions:[
+          name: "车次类型",
+          type: "train_num",
+          conditions: [
             {
-              label:"不限",
-              checked:true
-            },{
-              label:"高铁(G/C)",
-              checked:false
-            },{
-              label:"动车(D)",
-              checked:false
-            },{
-              label:"普通(Z/T/K)",
-              checked:false
-            },{
-              label:"其他(L/Y等)",
-              checked:false
+              label: "不限",
+              checked: true
+            },
+            {
+              label: "高铁(G/C)",
+              checked: false
+            },
+            {
+              label: "动车(D)",
+              checked: false
+            },
+            {
+              label: "普通(Z/T/K)",
+              checked: false
+            },
+            {
+              label: "其他(L/Y等)",
+              checked: false
             }
           ]
         },
 
         {
-          name:"出发时刻",
-          conditions:[
+          name: "出发时刻",
+          conditions: [
             {
-              label:"不限",
-              checked:true
+              label: "不限",
+              checked: true
             },
             {
-              label:"00:00~06:00",
-              checked:false
+              label: "00:00~06:00",
+              checked: false
             },
             {
-              label:"06:00~12:00",
-              checked:false
+              label: "06:00~12:00",
+              checked: false
             },
             {
-              label:"12:00~18:00",
-              checked:false
+              label: "12:00~18:00",
+              checked: false
             },
             {
-              label:"18:00~24:00",
-              checked:false
+              label: "18:00~24:00",
+              checked: false
             }
           ]
         },
 
         {
-          name:"到达时刻",
-          conditions:[
+          name: "到达时刻",
+          conditions: [
             {
-              label:"不限",
-              checked:true
+              label: "不限",
+              checked: true
             },
             {
-              label:"00:00~06:00",
-              checked:false
+              label: "00:00~06:00",
+              checked: false
             },
             {
-              label:"06:00~12:00",
-              checked:false
+              label: "06:00~12:00",
+              checked: false
             },
             {
-              label:"12:00~18:00",
-              checked:false
+              label: "12:00~18:00",
+              checked: false
             },
             {
-              label:"18:00~24:00",
-              checked:false
+              label: "18:00~24:00",
+              checked: false
             }
           ]
         },
 
         {
-          name:"出发车站",
-          conditions:[
+          name: "出发车站",
+          conditions: [
             {
-              label:"不限",
-              checked:true
+              label: "不限",
+              checked: true
             }
           ]
         },
 
         {
-          name:"到达车站",
-          conditions:[
+          name: "到达车站",
+          conditions: [
             {
-              label:"不限",
-              checked:true
+              label: "不限",
+              checked: true
             }
           ]
         },
 
         {
-          name:"坐席类型",
-          conditions:[
+          name: "坐席类型",
+          conditions: [
             {
-              label:"不限",
-              checked:true
+              label: "不限",
+              checked: true
             }
           ]
         }
@@ -232,6 +245,8 @@ export default {
             Math.floor(item.runTimeMinute % 60) +
             "分";
         });
+        self.screenData = self.trainList
+        self.filterData = self.trainList
         //预处理筛选框显示数据
         self.prepareCondition();
       });
@@ -239,31 +254,33 @@ export default {
 
     //预处理筛选框显示数据
     prepareCondition() {
-      let self = this
-      var fromStation = new Set()
-      var toStation = new Set()
-      var seat = new Set()
+      let self = this;
+      var fromStation = new Set();
+      var toStation = new Set();
+      var seat = new Set();
       self.trainList.forEach(item => {
-        fromStation.add(item.fromStationName)
-        toStation.add(item.toStationName)
+        fromStation.add(item.fromStationName);
+        toStation.add(item.toStationName);
         item.seatsInfo.forEach(item => {
-            seat.add(item.seatTypeName)
-        })
+          seat.add(item.seatTypeName);
+        });
       });
-      fromStation.forEach(item=>{
+      fromStation.forEach(item => {
         var condition = {
-          'label':item,
-          'checked':false}
-        self.AllConditions[3].conditions.push(condition)
-      })
-      toStation.forEach(item=>{
+          label: item,
+          checked: false
+        };
+        self.AllConditions[3].conditions.push(condition);
+      });
+      toStation.forEach(item => {
         self.AllConditions[4].conditions.push({
-          'label':item,
-          'checked':false})
-      })
-      seat.forEach(item=>{
-        self.AllConditions[5].conditions.push({'label':item,'checked':false})
-      })
+          label: item,
+          checked: false
+        });
+      });
+      seat.forEach(item => {
+        self.AllConditions[5].conditions.push({ label: item, checked: false });
+      });
     },
     sortTime() {
       if (!this.sortTimeSwitch) {
@@ -403,35 +420,179 @@ export default {
       }
     },
 
-    changeCheckList(conditions,element) {
-        if(element.label === "不限") {
-            if(element.checked) {
-                return
-            }else {
-                element.checked = true
-                conditions.forEach((item,index) => {
-                    if(index != 0) {
-                        item.checked = false
-                    }
-                })
+    changeCheckList(type, conditions, element) {
+      if (element.label === "不限") {
+        if (element.checked) {
+          return;
+        } else {
+          element.checked = true;
+          conditions.forEach((item, index) => {
+            if (index != 0) {
+              item.checked = false;
             }
+          });
         }
-        element.checked = !element.checked
+      }
+      element.checked = !element.checked;
 
-        var flag = false;
-        conditions.forEach(item => {
-            if(item.checked) {
-                flag = true
-            }
-        })
-        if(!flag) {
-            conditions[0].checked = true
-        }else {
-            conditions[0].checked = false
+      var flag = false;
+      conditions.forEach(item => {
+        if (item.checked) {
+          flag = true;
         }
+      });
+      if (!flag) {
+        conditions[0].checked = true;
+      } else {
+        conditions[0].checked = false;
+      }
+
+      //将选中条件置于对应的集合中
+      if(type == "车次类型") {
+        this.trainTypeFilterConditions.splice(0,this.trainTypeFilterConditions.length);
+      }
+      if(type == "出发时刻") {
+        this.departTimeFilterConditions.splice(0,this.departTimeFilterConditions.length);
+      }
+      if(type == "到达时刻") {
+        this.arriveTimeFilterConditions.splice(0,this.arriveTimeFilterConditions.length);
+      }
+      if(type == "出发车站") {
+        this.departCityConditions.splice(0, this.departCityConditions.length);
+      }
+      if(type == "到达车站") {
+        this.arriveCityConditions.splice(0, this.arriveCityConditions.length);
+      }
+      if(type == "坐席类型") {
+        this.seatTypeCondition.splice(0, this.seatTypeCondition.length);
+      }
+      conditions.forEach((item, index) => {
+        if (type == "车次类型") {
+          if ((index != 0) & (item.checked == true)) {
+            this.trainTypeFilterConditions.push(item.label);
+          }
+        }
+        if (type == "出发时刻") {
+          if ((index != 0) & (item.checked == true)) {
+            this.departTimeFilterConditions.push(item.label);
+          }
+        }
+        if (type == "到达时刻") {
+          if ((index != 0) & (item.checked == true)) {
+            this.arriveTimeFilterConditions.push(item.label);
+          }
+        }
+        if (type == "出发车站") {
+          if ((index != 0) & (item.checked == true)) {
+            this.departCityConditions.push(item.label);
+          }
+        }
+        if (type == "到达车站") {
+          if ((index != 0) & (item.checked == true)) {
+            this.arriveCityConditions.push(item.label);
+          }
+        }
+        if (type == "坐席类型") {
+          if ((index != 0) & (item.checked == true)) {
+            this.seatTypeCondition.push(item.label);
+          }
+        }
+      });
+      this.doFilterData();
+    },
+
+    
+    //根据选中的筛选条件去筛选screenData中数据
+    doFilterData() {
+      this.filterData = this.trainList.filter(item => {
+        // return this.doFilterByDepartTime(item.startTime)&&this.doFilterByArriveTime(item.arriveTime)&&this.doFilterByDepartCity(item.fromStationName)
+        return this.doFilterByTrainType(item)&&this.doFilterByDepartTime(item.startTime)
+               &&this.doFilterByArriveTime(item.arriveTime)&&this.doFilterByDepartCity(item.fromStationName)&&this.doFilterByArriveCity(item.toStationName)&&this.doFilterBySeatType(item)
+      });
+    },
+    doFilterByTrainType(item) {
+      if(this.trainTypeFilterConditions.length == 0) {
+        return true
+      }
+      var trainType
+      if(['G','C'].contains(item.trainCode.charAt(0))) {
+        trainType = "高铁(G/C)"
+      }else if(item.trainType === 'D') {
+        trainType = "动车(D)"
+      }else if(['Z','T','K'].contains(item.trainType)) {
+        trainType = "普通(Z/T/K)"
+      }else {
+        trainType = "其他(L/Y等)"
+      }
+      return this.trainTypeFilterConditions.contains(trainType)
+    },
+    doFilterByDepartTime(startTime) {
+        var flag = true;
+        var length = this.departTimeFilterConditions.length
+        for(var j=0;j < length;j++){
+          var times = this.departTimeFilterConditions[j].split('~')
+          if(times[0].localeCompare(startTime)<0&&times[1].localeCompare(startTime)>=0) {
+            flag = true
+            break
+          }else {
+            flag = false
+          }
+        }
+        return flag
+    },
+    doFilterByArriveTime(arriveTime){
+        var flag = true;
+        var length = this.arriveTimeFilterConditions.length
+        for(var j=0;j < length;j++){
+          flag = false
+          var times = this.arriveTimeFilterConditions[j].split('~')
+          if(times[0].localeCompare(arriveTime)<0&&times[1].localeCompare(arriveTime)>=0) {
+            flag = true
+            break
+          }else {
+            flag = false
+          }
+        }
+        return flag
+    },
+    doFilterByDepartCity(departCity){
+      if(this.departCityConditions.length == 0) {
+        return true
+      }
+      return this.departCityConditions.contains(departCity)
+    },
+    doFilterByArriveCity(arriveCity){
+      if(this.arriveCityConditions.length == 0) {
+        return true
+      }
+      return this.arriveCityConditions.contains(arriveCity)
+    },
+    doFilterBySeatType(item){
+      if(this.seatTypeCondition.length == 0) {
+        return true
+      }
+      for(var i=0,len=item.seatsInfo.length;i<len;i++) {
+        if(this.seatTypeCondition.contains(item.seatsInfo[i].seatTypeName)) {
+          return true
+        }
+      }
+      return false
+    },
+    clickConfirmBtn() {
+      this.screenData = this.filterData
+      this.filterSwitch = !this.filterSwitch
     }
   },
   mounted() {
+    Array.prototype.contains = function(needle) {
+        var flag = false;
+        this.forEach(item=>{
+          if(item == needle) {
+            flag = true;
+          }
+        })
+        return flag;
+    }
     this.httpGetTrainList();
   }
 };
@@ -780,7 +941,7 @@ html {
   }
 }
 
-.u-screen-box{
+.u-screen-box {
   background-color: #fff;
   border-top: 1px solid #eee;
   position: relative;
@@ -844,11 +1005,11 @@ html {
     top: 18px;
   }
 
-  .u-train-t1{
-    position:relative;
+  .u-train-t1 {
+    position: relative;
     font-size: 14px;
     display: block;
-    margin-bottom:15px;
+    margin-bottom: 15px;
     margin-top: 30px;
 
     .mint-switch {
@@ -860,7 +1021,7 @@ html {
         height: 20px;
       }
       .mint-switch-core::before {
-        width:34px;
+        width: 34px;
         height: 8px;
         background-color: transparent;
       }
